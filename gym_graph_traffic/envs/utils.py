@@ -1,0 +1,20 @@
+class AnsiColors:
+    Reset = "\u001b[0m"
+
+    Black = "\u001b[30m"
+    Red = "\u001b[31m"
+    Green = "\u001b[32m"
+    Yellow = "\u001b[33m"
+    Blue = "\u001b[34m"
+    Magenta = "\u001b[35m"
+    Cyan = "\u001b[36m"
+    White = "\u001b[37m"
+
+    BgdBlack = "\u001b[40m"
+    BgdRed = "\u001b[41m"
+    BgdGreen = "\u001b[42m"
+    BgdYellow = "\u001b[43m"
+    BgdBlue = "\u001b[44m"
+    BgdMagenta = "\u001b[45m"
+    BgdCyan = "\u001b[46m"
+    BgdWhite = "\u001b[47m"
