@@ -3,12 +3,6 @@ from typing import List
 
 import pygame
 
-from gym_graph_traffic.envs.utils import AnsiColors
-
-LR = "↔"
-UD = "↕"
-
-
 class Intersection(ABC):
 
     def __init__(self, idx):
@@ -31,12 +25,6 @@ class Intersection(ABC):
 
     def finalize(self) -> None:
         raise NotImplementedError
-
-    def view(self) -> str:
-        """
-        Visualize intersection as string with Ansi color codes.
-        """
-        return str(self.idx)
 
     def can_i_go(self, from_idx) -> int:
         raise NotImplementedError
@@ -82,13 +70,6 @@ class FourWayNoTurnsIntersection(Intersection):
             self.state = "lr"
         else:
             self.state = "ud"
-
-    def view(self) -> str:
-        if self.state is "lr":
-            prefix = AnsiColors.BgdMagenta + AnsiColors.Black + LR
-        else:
-            prefix = AnsiColors.BgdYellow + AnsiColors.Black + UD
-        return "{} {}{} ({:02d})".format(prefix, super().view(), AnsiColors.Reset, self.updates_until_state_change)
 
     def draw(self, surface, light_mode):
         red = (253, 65, 30)

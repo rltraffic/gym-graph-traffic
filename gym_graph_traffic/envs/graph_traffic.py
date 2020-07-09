@@ -8,8 +8,6 @@ from attrdict import AttrDict
 from gym_graph_traffic.envs.intersection import FourWayNoTurnsIntersection
 from gym_graph_traffic.envs.segment import Segment
 
-RETURN_CHARIOT = "\u001b[0;0H"
-
 
 class GraphTrafficEnv(gym.Env):
     def __init__(self, params):
