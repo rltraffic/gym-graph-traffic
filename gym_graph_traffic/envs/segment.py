@@ -4,7 +4,6 @@ import numpy as np
 import pygame
 
 from gym_graph_traffic.envs.intersection import Intersection
-from gym_graph_traffic.envs.utils import AnsiColors
 
 
 class Segment:
@@ -46,41 +45,6 @@ class Segment:
         self.p = np.random.binomial(1, self.init_car_density, self.length)
         self.v = np.zeros(self.p.nonzero()[0].shape, dtype=np.int8)
         self._update_free_init_cells()
-
-    def view_extended(self) -> str:
-        return self.view() + self.next_intersection.view()
-
-    def view_reversed(self) -> str:
-        return self.view(reverse=True)
-
-    def view(self, reverse: bool = False) -> str:
-        """
-        Visualize segment with cars as string with Ansi color codes. By default, cars are going from left to right.
-
-        :param reverse: Should the segment be shown reversed, cars going from right to left.
-        :return: String representation of cars on segment.
-        """
-        colors = np.ndarray(self.p.shape, dtype=np.object)
-        chars = np.ndarray(self.p.shape, dtype=np.object)
-        resets = np.ndarray(self.p.shape, dtype=np.object)
-
-        colors[:] = ""
-        chars[:] = "·"
-        resets[:] = AnsiColors.Reset
-
-        cars_indices = self.p.nonzero()[0]
-        colors.put(cars_indices, AnsiColors.BgdBlue + AnsiColors.Black)
-        chars.put(cars_indices, list(map(str, self.v)))
-        chars.tostring()
-
-        if reverse:
-            chars = np.flip(chars)
-            colors = np.flip(colors)
-
-        stacked = np.stack((colors, chars, resets))
-        flipped = np.swapaxes(stacked, 0, 1)
-
-        return "".join(("".join(element) for element in flipped))
 
     def draw(self, surface, light_mode):
         pass
