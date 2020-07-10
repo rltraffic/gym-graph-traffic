@@ -8,7 +8,7 @@ from gym_graph_traffic.envs.intersection import Intersection
 
 class Segment:
 
-    def __init__(self, idx: int, length: int, next_intersection: Intersection, to_side, init_car_density: float,
+    def __init__(self, idx: int, length: int, next_intersection: Intersection, to_side, car_density: float,
                  max_v: int, prob_slow_down: float, intersection_size: int, **kwargs):
 
         self.idx = idx
@@ -18,7 +18,7 @@ class Segment:
         self.next_intersection = next_intersection
 
         # cellular automata parameters
-        self.init_car_density = init_car_density
+        self.car_density = car_density
         self.max_v = max_v
         self.prob_slow_down = prob_slow_down
 
@@ -42,7 +42,7 @@ class Segment:
         return str(self.idx)
 
     def reset(self) -> None:
-        self.p = np.random.binomial(1, self.init_car_density, self.length)
+        self.p = np.random.binomial(1, self.car_density, self.length)
         self.v = np.zeros(self.p.nonzero()[0].shape, dtype=np.int8)
         self._update_free_init_cells()
 

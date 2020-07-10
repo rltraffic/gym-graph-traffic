@@ -12,21 +12,19 @@ from gym_graph_traffic.envs.segment import Segment
 class GraphTrafficEnv(gym.Env):
     def __init__(self, params):
 
-        print(params)
-
         params = AttrDict(params)
         self.params = params
 
         # simulation params
-        self.updates_per_step = params.traffic_graph.updates_per_step
-        self.max_steps = params.traffic_graph.max_steps
-        self.red_durations = params.traffic_graph.red_durations
-        self.red_durations_raw = params.traffic_graph.red_durations_raw
-        self.num_red_durations = len(params.traffic_graph.red_durations)
+        self.updates_per_step = params.updates_per_step
+        self.steps_per_episode = params.steps_per_episode
+        self.red_durations = params.red_durations
+        self.red_durations_raw = params.red_durations_raw
+        self.num_red_durations = len(params.red_durations)
 
         # road graph
-        self.num_intersections = len(params.traffic_graph.intersections)
-        self.num_segments = len(params.traffic_graph.segments)
+        self.num_intersections = len(params.intersections)
+        self.num_segments = len(params.segments)
         self.intersections = []
         self.segments = []
         self._set_up_road_graph(params)
@@ -36,17 +34,17 @@ class GraphTrafficEnv(gym.Env):
         self.reward_observation = RewardObservationWrapper(self.segments)
 
         # render-specific parameters
-        self.render_simulation = params.traffic_graph.render
+        self.render_simulation = params.render
         if self.render_simulation:
-            self.render_scale_factor = params.traffic_graph.render_scale_factor
+            self.render_scale_factor = params.render_scale_factor
             self.render_screen_size_scaled = tuple(
-                self.render_scale_factor * x for x in params.traffic_graph.render_screen_size)
+                self.render_scale_factor * x for x in params.render_screen_size)
             self.render_screen = pygame.display.set_mode(self.render_screen_size_scaled)
-            self.render_surface = pygame.Surface(params.traffic_graph.render_screen_size)
-            self.render_light_mode = params.traffic_graph.render_light_mode
+            self.render_surface = pygame.Surface(params.render_screen_size)
+            self.render_light_mode = params.render_light_mode
             if self.render_light_mode:
                 self.render_surface.fill(color=(244, 244, 244))
-            self.render_fps = params.traffic_graph.render_fps
+            self.render_fps = params.render_fps
             self.render_done = False
             self.render_clock = pygame.time.Clock()
             pygame.init()
@@ -57,16 +55,16 @@ class GraphTrafficEnv(gym.Env):
         self.reward_range = self.reward_observation.reward_range
 
     def _set_up_road_graph(self, params):
-        self.intersections = [FourWayNoTurnsIntersection(i, params.traffic_graph.red_durations, x, y,
-                                                         params.traffic_graph.intersection_size) for i, (x, y) in
-                              enumerate(params.traffic_graph.intersections)]
+        self.intersections = [FourWayNoTurnsIntersection(i, params.red_durations, x, y,
+                                                         params.intersection_size) for i, (x, y) in
+                              enumerate(params.intersections)]
 
         i = 0
         # (100, "r", 0, "l", 1) is a segment of length 100 going
         #                       from right side of intersection 0
         #                       to left side of intersection 1
-        for (length, from_idx, from_side, to_idx, to_side) in params.traffic_graph.segments:
-            segment = Segment(i, length, self.intersections[to_idx], to_side, **params.traffic_graph)
+        for (length, from_idx, from_side, to_idx, to_side) in params.segments:
+            segment = Segment(i, length, self.intersections[to_idx], to_side, **params)
             self.segments.append(segment)
             self.intersections[to_idx].add_entrance(to_side, segment)
             self.intersections[from_idx].add_exit(from_side, segment)
@@ -108,7 +106,7 @@ class GraphTrafficEnv(gym.Env):
             self.reward_observation.update()
 
         self.current_step += 1
-        done = self.current_step >= self.params.traffic_graph.max_steps
+        done = self.current_step >= self.steps_per_episode
 
         reward, observation = self.reward_observation.values()
 
