@@ -7,17 +7,13 @@ env = gym.make(env_name, params=PARAMETERS)
 
 print("Created environment: {}".format(env_name))
 
-for i_episode in range(1):  # 20
+for episode in range(1):  # 20
     observation = env.reset()
 
-    for t in range(10):  # 100
+    for step in range(10):  # 100
         action = env.action_space.sample()
-        print(action)
 
         observation, reward, done, info = env.step(action)
-
-        if done:
-            print("Episode finished after {} timesteps".format(t + 1))
-            break
+        print(f"step = {step} action = {action} reward = {reward}")
 
     env.close()
