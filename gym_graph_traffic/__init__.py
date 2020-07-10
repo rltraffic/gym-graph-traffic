@@ -1,6 +1,6 @@
 from gym.envs.registration import register
 
-from params import PARAMETERS
+from gym_graph_traffic.envs.params import PARAMETERS
 
 register(
     id="GraphTraffic-v0",

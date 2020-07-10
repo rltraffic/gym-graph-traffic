@@ -50,10 +50,10 @@ class Intersection(ABC):
 
 class FourWayNoTurnsIntersection(Intersection):
 
-    def __init__(self, idx, offsets: List[int], x, y, intersection_size):
+    def __init__(self, idx, red_durations: List[int], x, y, intersection_size):
         super().__init__(idx)
 
-        self.offsets = offsets
+        self.red_durations = red_durations
         self.routing = {"u": "d",
                         "d": "u",
                         "l": "r",
@@ -77,7 +77,7 @@ class FourWayNoTurnsIntersection(Intersection):
             self.dest_dict[segment.idx] = (dir_char, destination_segment)
 
     def set_action(self, action) -> None:
-        self.updates_until_state_change = self.offsets[action]
+        self.updates_until_state_change = self.red_durations[action]
         if self.updates_until_state_change == 0:
             self.state = "lr"
         else:

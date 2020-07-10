@@ -22,9 +22,9 @@ class GraphTrafficEnv(gym.Env):
         # simulation params
         self.updates_per_step = params.traffic_graph.updates_per_step
         self.max_steps = params.traffic_graph.max_steps
-        self.offsets = params.traffic_graph.offsets
-        self.offsets_raw = params.traffic_graph.offsets_raw
-        self.num_offsets = len(params.traffic_graph.offsets)
+        self.red_durations = params.traffic_graph.red_durations
+        self.red_durations_raw = params.traffic_graph.red_durations_raw
+        self.num_red_durations = len(params.traffic_graph.red_durations)
 
         # road graph
         self.num_intersections = len(params.traffic_graph.intersections)
@@ -54,12 +54,12 @@ class GraphTrafficEnv(gym.Env):
             pygame.init()
 
         # gym-specific attributes
-        self.action_space = gym.spaces.Discrete(self.num_offsets ** self.num_intersections)
+        self.action_space = gym.spaces.Discrete(self.num_red_durations ** self.num_intersections)
         self.observation_space = self.reward_observation.observation_space
         self.reward_range = self.reward_observation.reward_range
 
     def _set_up_road_graph(self, params):
-        self.intersections = [FourWayNoTurnsIntersection(i, params.traffic_graph.offsets, x, y,
+        self.intersections = [FourWayNoTurnsIntersection(i, params.traffic_graph.red_durations, x, y,
                                                          params.traffic_graph.intersection_size) for i, (x, y) in
                               enumerate(params.traffic_graph.intersections)]
 
@@ -78,9 +78,9 @@ class GraphTrafficEnv(gym.Env):
             intersection.finalize()
 
     def _action_int_to_action_array(self, action_int):
-        """Gets a string representation of the action_int in the base = number of offsets.
+        """Gets a string representation of the action_int in the base = number of red_durations.
            Returns the numeric string left filled with num_intersections zeroes."""
-        action_str = (np.base_repr(action_int, base=self.num_offsets)).zfill(self.num_intersections)
+        action_str = (np.base_repr(action_int, base=self.num_red_durations)).zfill(self.num_intersections)
 
         """Returns array of ints from action_str list of strings"""
         return np.array(list(int(s) for s in list(action_str)))
@@ -115,7 +115,7 @@ class GraphTrafficEnv(gym.Env):
         reward, observation = self.reward_observation.values()
 
         info = {"action_int": action_int,
-                "action_array": [self.offsets_raw[act] for act in action_array],
+                "action_array": [self.red_durations_raw[act] for act in action_array],
                 **self.reward_observation.info()}
 
         return observation, reward[0], done, info

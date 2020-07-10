@@ -1,7 +1,6 @@
 import gym
-import gym_graph_traffic
 
-from params import PARAMETERS
+from gym_graph_traffic.envs.params import PARAMETERS
 
 env_name = 'GraphTraffic-v0'
 env = gym.make(env_name, params=PARAMETERS)

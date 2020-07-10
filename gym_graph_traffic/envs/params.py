@@ -13,7 +13,7 @@ SEED = 170017
 UPDATE = 2.7  # seconds per traffic model update
 STEP = 60  # seconds of traffic model simulation per step
 
-OFFSETS = [0, 20, 40, 60]  # possible offsets
+RED_DURATIONS = [0, 20, 40, 60]  # possible red_durations
 V_MAX = 5
 
 PRESET = "grid_3x3"  # see PRESETS dictionary below
@@ -37,8 +37,8 @@ PARAMETERS = AttrDict({"run": {"episodes": EPISODES,
                                          "init_car_density": 0.125,
                                          "max_v": 5,
                                          "prob_slow_down": 0.1,
-                                         "offsets": [int(o / UPDATE) for o in OFFSETS],
-                                         "offsets_raw": OFFSETS,
+                                         "red_durations": [int(o / UPDATE) for o in RED_DURATIONS],
+                                         "red_durations_raw": RED_DURATIONS,
                                          "render": RENDER,
                                          "render_light_mode": LIGHT_MODE,
                                          "render_fps": 30,
@@ -46,7 +46,7 @@ PARAMETERS = AttrDict({"run": {"episodes": EPISODES,
                                          }
                        })
 
-assert all(0 <= off <= STEP for off in OFFSETS)
+assert all(0 <= off <= STEP for off in RED_DURATIONS)
 
 
 def _flatten(dict_of_dicts: Dict, sep="__") -> Dict:
