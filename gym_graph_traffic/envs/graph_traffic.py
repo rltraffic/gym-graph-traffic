@@ -60,7 +60,7 @@ class GraphTrafficEnv(gym.Env):
                               enumerate(params.intersections)]
 
         i = 0
-        # (100, "r", 0, "l", 1) is a segment of length 100 going
+        # (100, 0, "r", 1, "l") is a segment of length 100 going
         #                       from right side of intersection 0
         #                       to left side of intersection 1
         for (length, from_idx, from_side, to_idx, to_side) in params.segments:
