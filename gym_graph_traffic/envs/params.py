@@ -11,22 +11,24 @@ RED_DURATIONS = [0, 20, 40, 60]  # table of all possible red durations (see: REA
 
 # cars' movement
 MAX_SPEED = 5  # in cells per update
-PROB_SLOW_DOWN = 0.1
+PROB_SLOW_DOWN = 0.1 # parameter from Nagel-Schreckenberg model
 
 # road network
-PRESET = "easy"  # see PRESETS dictionary below
-SEGMENT_LENGTH = 100  # in cells
-CAR_DENSITY = 0.125
+PRESET = "grid_2x2"  # see PRESETS dictionary below
+SEGMENT_LENGTH = 100  # in cells --> 1 komórka odpowiada 7,5 metra
+CAR_DENSITY = 0.0125
 
 # rendering
-RENDER = False
+RENDER = True #show simulation
 RENDER_LIGHT_MODE = True
-RENDER_FPS = 30
+RENDER_FPS = 3 #30 # Maximum frames per second during render.
+
 
 PRESETS = {
     "easy": grid.make_line(4, False, 3, segment_len=SEGMENT_LENGTH),
     "grid_4x2": grid.make_grid(4, 2, 4, segment_len=SEGMENT_LENGTH),
-    "grid_3x3": grid.make_grid(3, 3, 2, segment_len=SEGMENT_LENGTH),
+    "grid_3x3": grid.make_grid(3, 3, 3, segment_len=SEGMENT_LENGTH),
+    "grid_2x2": grid.make_grid(2, 2, 4, segment_len=SEGMENT_LENGTH),
     "two_roads": grid.make_line(4, True, 3, segment_len=SEGMENT_LENGTH),
 }
 
