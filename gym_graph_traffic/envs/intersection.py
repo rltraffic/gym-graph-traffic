@@ -1,5 +1,6 @@
 from abc import ABC
 from typing import List
+import numpy as np
 
 import pygame
 
@@ -13,6 +14,10 @@ class Intersection(ABC):
 
         self.routing = None  # entrance_direction: str -> exit_direction: str
         self.dest_dict = None  # entrance_segment_idx: int -> (entrance_direction: str, exit_segment: Segment)
+
+        """create matrix of cells at the intersection; 
+        each intersection has 2 cells in two directions ( vertical and horizontal)"""
+        self.cells_at_the_intersection =np.zeros((2,2),dtype = int) #create matrix of cells
 
     def __str__(self) -> str:
         return str(self.idx)
@@ -79,16 +84,27 @@ class FourWayNoTurnsIntersection(Intersection):
                          pygame.Rect(self.x, self.y, self.intersection_size, self.intersection_size))
         if self.state is "lr":
             pygame.draw.rect(surface, red,
-                             pygame.Rect(self.x, self.y, self.intersection_size, red_width))
+                             pygame.Rect(self.x, self.y, self.intersection_size/2, red_width))
             pygame.draw.rect(surface, red,
-                             pygame.Rect(self.x, self.y + self.intersection_size - 1, self.intersection_size,
+                             pygame.Rect(self.x + self.intersection_size/2 + 1, self.y + self.intersection_size - 1, self.intersection_size/2,
                                          red_width))
+
+            car_color = (0, 0, 254) if light_mode else (180, 180, 180)
+
+            pygame.draw.rect(surface, car_color,
+                             #pierwsza komorka na skrzyzowaniu
+                             pygame.Rect((self.x + self.intersection_size/2 -2, self.y + self.intersection_size/2 +0.5, 1, self.intersection_size/2 -0.5)))
+            # druga komorka na skrzyzowaniu
+            #pygame.Rect((self.x + self.intersection_size/2 -2, self.y + self.intersection_size/2 +0.5, 1, self.intersection_size/2 -0.5)))
+
+
+
         else:
             pygame.draw.rect(surface, red,
-                             pygame.Rect(self.x, self.y, red_width, self.intersection_size))
+                             pygame.Rect(self.x, self.y + self.intersection_size/2 + 1, red_width, self.intersection_size/2))
             pygame.draw.rect(surface, red,
                              pygame.Rect(self.x + self.intersection_size - 1, self.y, red_width,
-                                         self.intersection_size))
+                                         self.intersection_size/2))
 
     def segment_draw_coords(self, d, to_side):
         half_intersection_size = self.intersection_size / 2
