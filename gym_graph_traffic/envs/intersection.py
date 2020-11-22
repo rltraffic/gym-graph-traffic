@@ -17,7 +17,7 @@ class Intersection(ABC):
 
         """create matrix of cells at the intersection; 
         each intersection has 2 cells in two directions ( vertical and horizontal)"""
-        self.cells_at_the_intersection =np.zeros((2,2),dtype = int) #create matrix of cells
+        self.cells_at_the_intersection = np.zeros((2,2),dtype = int) #create matrix of cells
 
     def __str__(self) -> str:
         return str(self.idx)
@@ -83,28 +83,40 @@ class FourWayNoTurnsIntersection(Intersection):
         pygame.draw.rect(surface, road_color,
                          pygame.Rect(self.x, self.y, self.intersection_size, self.intersection_size))
         if self.state is "lr":
+
+            # sprawdzenie czy komórki ze skrzyzowaniu maja auta, czyli są rowne "1", jesli tak to narysuj auto na skrzyzowaniu
+            for i, check_cell in enumerate(self.cells_at_the_intersection):
+                for car_in_cell in np.nonzero(check_cell)[0]:
+                    if car_in_cell is not None:
+                        #change color for 162, 162, 162
+                        car_color = (0, 0, 254) if light_mode else (180, 180, 180)
+                        pygame.draw.rect(surface, car_color,
+                                        pygame.Rect((self.x + self.intersection_size/2 + 4 * car_in_cell - 2, self.y + (self.intersection_size/2 * i + 0.5), 1, self.intersection_size/2 - 0.5)))
+
             pygame.draw.rect(surface, red,
                              pygame.Rect(self.x, self.y, self.intersection_size/2, red_width))
             pygame.draw.rect(surface, red,
                              pygame.Rect(self.x + self.intersection_size/2 + 1, self.y + self.intersection_size - 1, self.intersection_size/2,
                                          red_width))
 
-            car_color = (0, 0, 254) if light_mode else (180, 180, 180)
-
-            pygame.draw.rect(surface, car_color,
-                             #pierwsza komorka na skrzyzowaniu
-                             pygame.Rect((self.x + self.intersection_size/2 -2, self.y + self.intersection_size/2 +0.5, 1, self.intersection_size/2 -0.5)))
-            # druga komorka na skrzyzowaniu
-            #pygame.Rect((self.x + self.intersection_size/2 -2, self.y + self.intersection_size/2 +0.5, 1, self.intersection_size/2 -0.5)))
-
-
-
         else:
+
+            #sprawdzenie czy komórki ze skrzyzowaniu maja auta, czyli są rowne "1", jesli tak to narysuj auto na skrzyzowaniu
+            for i, check_cell in enumerate(self.cells_at_the_intersection):
+                for car_in_cell in np.nonzero(check_cell)[0]:
+                    if car_in_cell is not None:
+                        # change color for 162, 162, 162
+                        car_color = (0, 0, 254) if light_mode else (180, 180, 180)
+                        pygame.draw.rect(surface, car_color,
+                                    pygame.Rect((self.x + (self.intersection_size/2 * car_in_cell + 0.5), self.y + self.intersection_size/2 + 4 * i - 2, self.intersection_size/2 - 0.5, 1)))
+
             pygame.draw.rect(surface, red,
-                             pygame.Rect(self.x, self.y + self.intersection_size/2 + 1, red_width, self.intersection_size/2))
+                             pygame.Rect(self.x, self.y + self.intersection_size / 2 + 1, red_width,
+                                         self.intersection_size / 2))
             pygame.draw.rect(surface, red,
                              pygame.Rect(self.x + self.intersection_size - 1, self.y, red_width,
-                                         self.intersection_size/2))
+                                         self.intersection_size / 2))
+
 
     def segment_draw_coords(self, d, to_side):
         half_intersection_size = self.intersection_size / 2
@@ -119,16 +131,51 @@ class FourWayNoTurnsIntersection(Intersection):
         return to_direction[to_side]
 
     def update(self) -> None:
+        #self.cells_at_the_intersection.put(3,1)
         if self.state is "ud":
             self.updates_until_state_change -= 1
             if self.updates_until_state_change == 0:
                 self.state = "lr"
 
-    def can_i_go(self, from_idx) -> int:
-        (source, dest) = self.dest_dict.get(from_idx, (None, None))
+    def can_i_go(self, segment, cars_indices):
+        (source, dest) = self.dest_dict.get(segment.idx, (None, None))
+
         if source in self.state and dest is not None:
-            return dest.free_init_cells
+            if source is "r":
+                if not np.any(self.cells_at_the_intersection[0]):
+                    free_cells = {
+                        'intersection': len(self.cells_at_the_intersection[0]),
+                        'segment': dest.free_init_cells,
+                        'chosen_segment': dest
+                    }
+                    return free_cells
+            elif source is "l":
+                if not np.any(self.cells_at_the_intersection[1]):
+                    free_cells = {
+                        'intersection': len(self.cells_at_the_intersection[0]),
+                        'segment': dest.free_init_cells,
+                        'chosen_segment': dest
+                    }
+                    return free_cells
+            elif source is "d":
+                if self.cells_at_the_intersection[0][1] == 0 and self.cells_at_the_intersection[1][1] == 0:
+                    free_cells = {
+                        'intersection': len(self.cells_at_the_intersection[0]),
+                        'segment': dest.free_init_cells,
+                        'chosen_segment': dest
+                    }
+                    return free_cells
+            else:
+                if self.cells_at_the_intersection[0][0] == 0 and self.cells_at_the_intersection[0][0] == 0:
+                    free_cells = {
+                        'intersection': len(self.cells_at_the_intersection[0]),
+                        'segment': dest.free_init_cells,
+                        'chosen_segment': dest
+                    }
+                    return free_cells
+
         return 0
+
 
     def pass_car(self, from_idx, car_position, car_velocity) -> None:
         (_, dest) = self.dest_dict[from_idx]

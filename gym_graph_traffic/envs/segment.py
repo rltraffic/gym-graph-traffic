@@ -93,13 +93,21 @@ class Segment:
         First phase of segment update: cellular automata step, and (sometimes) passing car to following segment.
         """
 
-        # extend p vector by free cells of following segment
-        next_segment_free_cells = self.next_intersection.can_i_go(self.idx)
-        if next_segment_free_cells > 0:
-            self.p = np.append(self.p, np.zeros(next_segment_free_cells))
+        #check if there is auto (1) in the last 5 cells of the segment
+        if 1 in self.p[-5:]:
+            #get car indices from the last cells
+            cars_indices = [i for i in self.p.nonzero()[0] if i >= 95]
+            # extend p vector by free cells of following segment
+            next_segment_free_cells = self.next_intersection.can_i_go(self, cars_indices)
+            if next_segment_free_cells is not None and isinstance(next_segment_free_cells, dict):
+                if next_segment_free_cells.get("intersection") > 0:
+                    #TODO
+                    next_segment_free_cells = next_segment_free_cells.get("intersection") + next_segment_free_cells.get("segment")
+                    self.p = np.append(self.p, np.zeros(next_segment_free_cells))
 
-        # update cellular automata
-        self._nagel_schreckenberg_step()
+        # update cellular automata if vector p contains cars
+        if 1 in self.p:
+            self._nagel_schreckenberg_step()
 
         # cut excessive cells
         self.p, next_segment_cells = np.split(self.p, [self.length])
@@ -157,6 +165,9 @@ class Segment:
         Updating information about init cells.
         """
         i = 0
-        while i < self.max_v and self.p[i] != 1:
+        #TODO
+        #ale moga byc 1,2 lub 3 komorki zajete na skrzyzowaniu
+        #odjecie 1, poniewaz 1 komorki moge byc zajete tez na skrzyżowaniu
+        while i < self.max_v - 1 and self.p[i] != 1:
             i += 1
         self.free_init_cells = i
