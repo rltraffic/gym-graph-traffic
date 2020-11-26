@@ -93,17 +93,18 @@ class Segment:
         First phase of segment update: cellular automata step, and (sometimes) passing car to following segment.
         """
 
-        #check if there is auto (1) in the last 5 cells of the segment
+        next_segment_free_cells = 0
+        # check if there is auto (1) in the last 5 cells of the segment
         if 1 in self.p[-5:]:
-            #get car indices from the last cells
+            # get car indices from the last cells
             cars_indices = [i for i in self.p.nonzero()[0] if i >= 95]
             # extend p vector by free cells of following segment
             next_segment_free_cells = self.next_intersection.can_i_go(self, cars_indices)
             if next_segment_free_cells is not None and isinstance(next_segment_free_cells, dict):
-                if next_segment_free_cells.get("intersection") > 0:
-                    #TODO
-                    next_segment_free_cells = next_segment_free_cells.get("intersection") + next_segment_free_cells.get("segment")
-                    self.p = np.append(self.p, np.zeros(next_segment_free_cells))
+                if next_segment_free_cells.get("free_cells_at_intersection") != 0:
+                    # TODO
+                    # next_segment_free_cells = next_segment_free_cells['free_cells_at_segment'][cars_indices[0]] #= 3  4#next_segment_free_cells.get("free_init_cells_intersection") + next_segment_free_cells.get("free_init_cells")
+                    self.p = np.append(self.p, np.zeros(next_segment_free_cells['free_cells_at_segment'][cars_indices[-1]] + next_segment_free_cells['free_cells_at_intersection']))
 
         # update cellular automata if vector p contains cars
         if 1 in self.p:
@@ -115,9 +116,27 @@ class Segment:
         # if some car crossed intersection: pass car to next segment (via the intersection)
         try:
             next_sect_car_pos = next_segment_cells.tolist().index(1)
+            # next_sect_car_pos = []
+            # for i, j in enumerate(next_segment_cells):
+            #     if j == 1:
+            #         next_sect_car_pos.append(i)
+            # if len(next_sect_car_pos) > 1:
+            #     print("error - len of next_sect_car_pos")
+            #print(next_sect_car_pos)
+
             # at any given update, only one car can cross intersection (by the rules of automata)
+            # if len(self.v) > 1:
+            #     self.v, next_sect_car_vel = np.split(self.v, [-len(next_sect_car_pos)])
+            # else:
+            #     self.v, next_sect_car_vel = np.split(self.v, [0])
+            #
+            # if len(self.p.nonzero()[0]) != len(self.v):
+            #     print("error!111")
+
             self.v, next_sect_car_vel = np.split(self.v, [-1])
-            self.next_intersection.pass_car(self.idx, next_sect_car_pos, next_sect_car_vel[0])
+
+            self.next_intersection.pass_car(self.idx, next_sect_car_pos, next_sect_car_vel, next_segment_free_cells['chosen_segment'][-1], next_segment_free_cells['direction'])
+
         except:
             pass
 
@@ -132,6 +151,8 @@ class Segment:
             self.p[pos] = 1
             self.v = np.insert(self.v, 0, vel)
             self.new_car_at = None
+            if len(self.p.nonzero()[0]) != len(self.v):
+                print("error2")
 
         # update information about init cells
         self._update_free_init_cells()
@@ -149,6 +170,10 @@ class Segment:
         cars_indices = self.p.nonzero()[0]
         cars_indices_extended = np.append(cars_indices, self.p.size)
         free_cells = cars_indices_extended[1:] - cars_indices - 1
+
+        if len(self.v) > len (free_cells):
+            print("ERROR IN NAGEL_SCHRECKENBERG_STEP() - segment")
+
         self.v = np.minimum(self.v, free_cells)
 
         # 3. Randomization
@@ -165,9 +190,7 @@ class Segment:
         Updating information about init cells.
         """
         i = 0
-        #TODO
-        #ale moga byc 1,2 lub 3 komorki zajete na skrzyzowaniu
-        #odjecie 1, poniewaz 1 komorki moge byc zajete tez na skrzyżowaniu
-        while i < self.max_v - 1 and self.p[i] != 1:
+        # TODO
+        while i < self.max_v and self.p[i] != 1:
             i += 1
         self.free_init_cells = i

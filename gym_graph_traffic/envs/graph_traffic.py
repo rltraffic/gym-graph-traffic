@@ -98,6 +98,8 @@ class GraphTrafficEnv(gym.Env):
             # update simulation
             for s in self.segments:
                 s.update_first_phase()
+            for i in self.intersections:
+                i.update_first_phase()
             for s in self.segments:
                 s.update_second_phase()
             for i in self.intersections:
