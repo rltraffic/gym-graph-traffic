@@ -21,6 +21,8 @@ class GraphTrafficEnv(gym.Env):
         self.red_durations = params.red_durations
         self.red_durations_raw = params.red_durations_raw
         self.num_red_durations = len(params.red_durations)
+        self.max_v = params.max_v
+        self.prob_slow_down = params.prob_slow_down
 
         # road graph
         self.num_intersections = len(params.intersections)
@@ -56,7 +58,7 @@ class GraphTrafficEnv(gym.Env):
 
     def _set_up_road_graph(self, params):
         self.intersections = [FourWayNoTurnsIntersection(i, params.red_durations, x, y,
-                                                         params.intersection_size) for i, (x, y) in
+                                                         params.intersection_size, params.max_v, params.prob_slow_down) for i, (x, y) in
                               enumerate(params.intersections)]
 
         i = 0

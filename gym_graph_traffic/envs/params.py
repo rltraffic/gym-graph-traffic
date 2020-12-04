@@ -16,7 +16,7 @@ PROB_SLOW_DOWN = 0.1 # parameter from Nagel-Schreckenberg model
 # road network
 PRESET = "grid_2x2"  # see PRESETS dictionary below
 SEGMENT_LENGTH = 100  # in cells --> 1 komórka odpowiada 7,5 metra
-CAR_DENSITY = 0.0125
+CAR_DENSITY = 0.125
 
 # rendering
 RENDER = True #show simulation
