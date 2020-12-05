@@ -19,7 +19,7 @@ class Intersection(ABC):
 
         # create matrix of cells at the intersection,
         # each intersection has 2 cells in two directions ( vertical and horizontal)
-        self.cells_at_the_intersection = np.zeros((2, 2), dtype=int)  # create matrix of cells
+        self.cells_at_the_intersection = np.zeros((2, 2), dtype=int)
 
         # communication with neighbour segments about cars that are on intersection
         self.new_car_at_intersection = []
@@ -169,7 +169,7 @@ class FourWayNoTurnsIntersection(Intersection):
               ---->   
             Otherwise, when a car from the cell wants to turn left and
             comes from the same state that is on, e.g.
-            state is "ld", car comes to intersection from right
+            state is "lr", car comes to intersection from right
             <-----
             ↓[1 0]
             ↓[0 0]
@@ -701,17 +701,17 @@ class FourWayNoTurnsIntersection(Intersection):
                         delete_elements.append(car)
 
                 # if the first cell is occupied and car turn left
-                elif car[0] == 0 and car[5] == "turn left":
+                elif car[5] == "turn left":
 
-                    # If a car is at an intersection and the traffic light (state) has changed,
-                    # it has priority and can cross the intersection first --> priority = True
+                    # If a car is at an intersection and the traffic light (state) has changed
+                    # or the car is just leaving the intersection (car[0] = 2) it has priority
+                    # and can cross the intersection first --> priority = True
                     # If a car is at an intersection and wants to turn left,
                     # and cars are coming in the opposite direction, it must
                     # give way to them. --> priority = False
 
                     priority = None
-
-                    if car[3] in self.state:
+                    if car[3] in self.state or car[0] == 2:
                         priority = True
                     else:
                         priority = False
@@ -732,11 +732,16 @@ class FourWayNoTurnsIntersection(Intersection):
                         # [  0]
                         # [0,0]
                         pos, next_segment_cells = np.split(pos, [3])
-                    else:
+                    elif free_cells_at_intersection == 2:
                         # split cells - 2 cells at intersection e.g.
                         # [  0]
                         # [0,0]
                         pos, next_segment_cells = np.split(pos, [2])
+                    else:
+                        # split cells - 1 cells at intersection e.g.
+                        # [   ]
+                        # [  0]
+                        pos, next_segment_cells = np.split(pos, [1])
 
                     # if the car stays at the intersection
                     if (np.count_nonzero(next_segment_cells)) == 0:
@@ -744,24 +749,49 @@ class FourWayNoTurnsIntersection(Intersection):
                         car[1] = vel
 
                         # car changes its position at the intersection and occupies second cell
+                        # if car[0] = 0 or third cell if car[0] = 1
                         if pos.tolist().index(1) == 1:
-                            # before, e.g.
-                            # [  0]       [  0]
-                            # [1,0] after [0,1]
-                            # update position car at the intersection
-                            car[0] = 1
                             if car[3] == 'l':
-                                self.cells_at_the_intersection.put(0, 0)
-                                self.cells_at_the_intersection.put(2, 1)
+                                if car[0] == 0:
+                                    self.cells_at_the_intersection.put(0, 0)
+                                    self.cells_at_the_intersection.put(2, 1)
+                                else:
+                                    self.cells_at_the_intersection.put(2, 0)
+                                    self.cells_at_the_intersection.put(3, 1)
                             elif car[3] == 'r':
-                                self.cells_at_the_intersection.put(3, 0)
-                                self.cells_at_the_intersection.put(1, 1)
+                                if car[0] == 0:
+                                    self.cells_at_the_intersection.put(3, 0)
+                                    self.cells_at_the_intersection.put(1, 1)
+                                else:
+                                    self.cells_at_the_intersection.put(1, 0)
+                                    self.cells_at_the_intersection.put(0, 1)
                             elif car[3] == 'd':
-                                self.cells_at_the_intersection.put(2, 0)
-                                self.cells_at_the_intersection.put(3, 1)
+                                if car[0] == 0:
+                                    self.cells_at_the_intersection.put(2, 0)
+                                    self.cells_at_the_intersection.put(3, 1)
+                                else:
+                                    self.cells_at_the_intersection.put(3, 0)
+                                    self.cells_at_the_intersection.put(1, 1)
                             else:
-                                self.cells_at_the_intersection.put(1, 0)
-                                self.cells_at_the_intersection.put(0, 1)
+                                if car[0] == 0:
+                                    self.cells_at_the_intersection.put(1, 0)
+                                    self.cells_at_the_intersection.put(0, 1)
+                                else:
+                                    self.cells_at_the_intersection.put(0, 0)
+                                    self.cells_at_the_intersection.put(2, 1)
+
+                            # update position car at the intersection
+                            if car[0] == 0:
+                                # before, e.g.
+                                # [  0]       [  0]
+                                # [1,0] after [0,1]
+                                car[0] = 1
+                            else:
+                                # before, e.g.
+                                # [  0]       [  1]
+                                # [  1] after [  0]
+                                car[0] = 2
+
                         elif free_cells_at_intersection == 3 and pos.tolist().index(1) == 2:
                             # before, e.g.
                             # [  0]       [  1]
@@ -788,141 +818,38 @@ class FourWayNoTurnsIntersection(Intersection):
 
                         # clean the cell at the intersection
                         if car[3] == 'l':
-                            self.cells_at_the_intersection.put(0, 0)
-                        elif car[3] == 'r':
-                            self.cells_at_the_intersection.put(3, 0)
-                        elif car[3] == 'd':
-                            self.cells_at_the_intersection.put(2, 0)
-                        else:
-                            self.cells_at_the_intersection.put(1, 0)
-
-                        # If the car leaves the intersection, add it to a temporary
-                        # array that will allow you to remove it from the array new_car_at_intersection[]
-                        delete_elements.append(car)
-
-                elif car[0] == 1 and car[5] == "turn left":
-
-                    # If a car is at an intersection and the traffic light (state) has changed,
-                    # it has priority and can cross the intersection first --> priority = True
-                    # If a car is at an intersection and wants to turn left,
-                    # and cars are coming in the opposite direction, it must
-                    # give way to them. --> priority = False
-
-                    priority = None
-
-                    if car[3] in self.state:
-                        priority = True
-                    else:
-                        priority = False
-
-                    side_previous_segment = self.dest_dict[car[2]][0]
-
-                    (free_cells_at_intersection,
-                     free_cells_at_next_segment) = self.check_can_i_go_to_the_next_segment_from_intersection(
-                        car[0], side_previous_segment, priority)
-
-                    pos = np.zeros((free_cells_at_intersection + free_cells_at_next_segment), dtype=np.int8)
-                    # put car in the vector
-                    pos[0] = 1
-                    (pos, vel) = self._nagel_schreckenberg_step(pos, car[1])
-
-                    if free_cells_at_intersection == 2:
-                        # split cells - 2 cells at intersection e.g.
-                        # [  0]
-                        # [  0]
-                        pos, next_segment_cells = np.split(pos, [2])
-                    else:
-                        # split cells - 1 cells at intersection e.g.
-                        # [   ]
-                        # [  0]
-                        pos, next_segment_cells = np.split(pos, [1])
-
-                    # if the car stays at the intersection
-                    if (np.count_nonzero(next_segment_cells)) == 0:
-                        # update velocity car at the intersection
-                        car[1] = vel
-                        # car changes its position at the intersection and occupies third cell
-                        if pos.tolist().index(1) == 1:
-                            # before, e.g.
-                            # [  0]       [  1]
-                            # [  1] after [  0]
-                            # update position car at the intersection
-                            car[0] = 2
-                            if car[3] == 'l':
+                            if car[0] == 0:
+                                self.cells_at_the_intersection.put(0, 0)
+                            elif car[0] == 1:
                                 self.cells_at_the_intersection.put(2, 0)
-                                self.cells_at_the_intersection.put(3, 1)
-                            elif car[3] == 'r':
-                                self.cells_at_the_intersection.put(1, 0)
-                                self.cells_at_the_intersection.put(0, 1)
-                            elif car[3] == 'd':
+                            else:
                                 self.cells_at_the_intersection.put(3, 0)
-                                self.cells_at_the_intersection.put(1, 1)
+                        elif car[3] == 'r':
+                            if car[0] == 0:
+                                self.cells_at_the_intersection.put(3, 0)
+                            elif car[0] == 1:
+                                self.cells_at_the_intersection.put(1, 0)
                             else:
                                 self.cells_at_the_intersection.put(0, 0)
-                                self.cells_at_the_intersection.put(2, 1)
-                    else:
-                        # if the car leaves the intersection
-                        # update position and velocity car in new segment
-                        self.exits[side_exit_from_intersection].new_car_at = (
-                            next_segment_cells.tolist().index(1), vel[0])
-
-                        # clean the cell at the intersection
-                        if car[3] == 'l':
-                            self.cells_at_the_intersection.put(2, 0)
-                        elif car[3] == 'r':
-                            self.cells_at_the_intersection.put(1, 0)
                         elif car[3] == 'd':
-                            self.cells_at_the_intersection.put(3, 0)
+                            if car[0] == 0:
+                                self.cells_at_the_intersection.put(2, 0)
+                            elif car[0] == 1:
+                                self.cells_at_the_intersection.put(3, 0)
+                            else:
+                                self.cells_at_the_intersection.put(1, 0)
                         else:
-                            self.cells_at_the_intersection.put(0, 0)
+                            if car[0] == 0:
+                                self.cells_at_the_intersection.put(1, 0)
+                            elif car[0] == 1:
+                                self.cells_at_the_intersection.put(0, 0)
+                            else:
+                                self.cells_at_the_intersection.put(2, 0)
 
                         # If the car leaves the intersection, add it to a temporary
                         # array that will allow you to remove it from the array new_car_at_intersection[]
                         delete_elements.append(car)
 
-                else:
-
-                    # The car is just leaving the intersection so it has priority
-                    priority = True
-                    side_previous_segment = self.dest_dict[car[2]][0]
-
-                    (free_cells_at_intersection,
-                     free_cells_at_next_segment) = self.check_can_i_go_to_the_next_segment_from_intersection(
-                        car[0], side_previous_segment, priority)
-
-                    pos = np.zeros((free_cells_at_intersection + free_cells_at_next_segment), dtype=np.int8)
-                    # put car in the vector
-                    pos[0] = 1
-                    (pos, vel) = self._nagel_schreckenberg_step(pos, car[1])
-
-                    # split cells - 1 cells at intersection e.g.
-                    # [  0]
-                    # [   ]
-                    pos, next_segment_cells = np.split(pos, [1])
-
-                    # if the car stays at the intersection
-                    if (np.count_nonzero(next_segment_cells)) == 0:
-                        # update velocity car at the intersection
-                        car[1] = vel
-                    else:
-                        # if the car leaves the intersection
-                        # update position and velocity car in new segment
-                        self.exits[side_exit_from_intersection].new_car_at = (
-                            next_segment_cells.tolist().index(1), vel[0])
-
-                        # clean the cell at the intersection
-                        if car[3] == 'l':
-                            self.cells_at_the_intersection.put(3, 0)
-                        elif car[3] == 'r':
-                            self.cells_at_the_intersection.put(0, 0)
-                        elif car[3] == 'd':
-                            self.cells_at_the_intersection.put(1, 0)
-                        else:
-                            self.cells_at_the_intersection.put(2, 0)
-
-                        # If the car leaves the intersection, add it to a temporary
-                        # array that will allow you to remove it from the array new_car_at_intersection[]
-                        delete_elements.append(car)
             # If the car has just left the intersection, remove its information from the array new_car_at_intersection[]
             for i in delete_elements:
                 self.new_car_at_intersection.remove(i)
