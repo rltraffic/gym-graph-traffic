@@ -700,8 +700,8 @@ class FourWayNoTurnsIntersection(Intersection):
                         # array that will allow you to remove it from the array new_car_at_intersection[]
                         delete_elements.append(car)
 
-                # if the first cell is occupied and car turn left
-                elif car[5] == "turn left":
+                # if the car turns left
+                else:
 
                     # If a car is at an intersection and the traffic light (state) has changed
                     # or the car is just leaving the intersection (car[0] = 2) it has priority
