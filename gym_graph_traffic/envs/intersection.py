@@ -169,7 +169,7 @@ class FourWayNoTurnsIntersection(Intersection):
               ---->   
             Otherwise, when a car from the cell wants to turn left and
             comes from the same state that is on, e.g.
-            state is "ld", car comes to intersection from right
+            state is "lr", car comes to intersection from right
             <-----
             ↓[1 0]
             ↓[0 0]
