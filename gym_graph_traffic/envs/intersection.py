@@ -239,7 +239,7 @@ class FourWayNoTurnsIntersection(Intersection):
                                 # check if there are cars in the opposite segment
                                 if np.count_nonzero(self.entrances['l'].p) != 0:
                                     # check if there is a car the last five cells in the opposite segment
-                                    if (np.where(self.entrances['l'].p == 1)[0][-1]) < 95:
+                                    if (np.where(self.entrances['l'].p == 1)[0][-1]) < (self.entrances['l'].length - 5):
                                         info_can_i_go['free_cells_at_intersection'] = 3
                                         info_can_i_go['free_cells_at_segment'] = {
                                             cars_indices: self.exits[chosen_direction].free_init_cells}
@@ -315,7 +315,7 @@ class FourWayNoTurnsIntersection(Intersection):
                                 # check if there are cars in the opposite segment
                                 if np.count_nonzero(self.entrances['r'].p) != 0:
                                     # check if there is a car the last five cells in the opposite segment
-                                    if (np.where(self.entrances['r'].p == 1)[0][-1]) < 95:
+                                    if (np.where(self.entrances['r'].p == 1)[0][-1]) < (self.entrances['r'].length - 5):
                                         info_can_i_go['free_cells_at_intersection'] = 3
                                         info_can_i_go['free_cells_at_segment'] = {
                                             cars_indices: self.exits[chosen_direction].free_init_cells}
@@ -390,7 +390,7 @@ class FourWayNoTurnsIntersection(Intersection):
                                 # check if there are cars in the opposite segment
                                 if np.count_nonzero(self.entrances['u'].p) != 0:
                                     # check if there is a car the last five cells in the opposite segment
-                                    if (np.where(self.entrances['u'].p == 1)[0][-1]) < 95:
+                                    if (np.where(self.entrances['u'].p == 1)[0][-1]) < (self.entrances['u'].length - 5):
                                         info_can_i_go['free_cells_at_intersection'] = 3
                                         info_can_i_go['free_cells_at_segment'] = {
                                             cars_indices: self.exits[chosen_direction].free_init_cells}
@@ -463,7 +463,7 @@ class FourWayNoTurnsIntersection(Intersection):
                                 # check if there are cars in the opposite segment
                                 if np.count_nonzero(self.entrances['d'].p) != 0:
                                     # check if there is a car the last five cells in the opposite segment
-                                    if (np.where(self.entrances['d'].p == 1)[0][-1]) < 95:
+                                    if (np.where(self.entrances['d'].p == 1)[0][-1]) < (self.entrances['d'].length - 5):
                                         info_can_i_go['free_cells_at_intersection'] = 3
                                         info_can_i_go['free_cells_at_segment'] = {
                                             cars_indices: self.exits[chosen_direction].free_init_cells}
@@ -948,7 +948,7 @@ class FourWayNoTurnsIntersection(Intersection):
                     # check that there are cars in the segment opposite of the previous segment
                     if np.count_nonzero(self.entrances['r'].p) != 0:
                         # check if there is a car the last five cells in the opposite segment
-                        if (np.where(self.entrances['r'].p == 1)[0][-1]) < 95:
+                        if (np.where(self.entrances['r'].p == 1)[0][-1]) < (self.entrances['r'].length - 5):
                             free_cells_at_intersection = 3 - car_position
                             free_cells_at_next_segment = self.exits['u'].free_init_cells
                         else:
@@ -969,7 +969,7 @@ class FourWayNoTurnsIntersection(Intersection):
                     # check that there are cars in the segment opposite of the previous segment
                     if np.count_nonzero(self.entrances['l'].p) != 0:
                         # check if there is a car the last five cells in the opposite segment
-                        if (np.where(self.entrances['l'].p == 1)[0][-1]) < 95:
+                        if (np.where(self.entrances['l'].p == 1)[0][-1]) < (self.entrances['l'].length - 5):
                             free_cells_at_intersection = 3 - car_position
                             free_cells_at_next_segment = self.exits['d'].free_init_cells
                         else:
@@ -989,7 +989,7 @@ class FourWayNoTurnsIntersection(Intersection):
                     # check that there are cars in the segment opposite of the previous segment
                     if np.count_nonzero(self.entrances['u'].p) != 0:
                         # check if there is a car the last five cells in the opposite segment
-                        if (np.where(self.entrances['u'].p == 1)[0][-1]) < 95:
+                        if (np.where(self.entrances['u'].p == 1)[0][-1]) < (self.entrances['u'].length - 5):
                             free_cells_at_intersection = 3 - car_position
                             free_cells_at_next_segment = self.exits['l'].free_init_cells
                         else:
@@ -1009,7 +1009,7 @@ class FourWayNoTurnsIntersection(Intersection):
                     # check that there are cars in the segment opposite of the previous segment
                     if np.count_nonzero(self.entrances['d'].p) != 0:
                         # check if there is a car the last five cells in the opposite segment
-                        if (np.where(self.entrances['d'].p == 1)[0][-1]) < 95:
+                        if (np.where(self.entrances['d'].p == 1)[0][-1]) < (self.entrances['d'].length - 5):
                             free_cells_at_intersection = 3 - car_position
                             free_cells_at_next_segment = self.exits['r'].free_init_cells
                         else:

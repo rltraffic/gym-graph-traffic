@@ -96,20 +96,20 @@ class Segment:
         info_can_i_go = None
         # check if there is auto (1) in the last 5 cells of the segment
         if 1 in self.p[-5:]:
-            # get car indices from the last cells
-            cars_indices = [i for i in self.p.nonzero()[0] if i >= 95]
+            # get car indice from the last cell contains '1'
+            car_last_indice = self.p.nonzero()[0][-1]
             # Check if the car can pass the intersection, if so then save all the informations into the dictionary
             # info_can_i_go =
             # {'free_cells_at_intersection': 0 or 1 or 2 or 3,
             # 'chosen_segment':[intersection.exits[chosen_direction].idx),intersection.exits[chosen_direction].to_side],
-            # 'free_cells_at_segment': {cars_indices[-1]: intersection.exits[chosen_direction].free_init_cells}},
+            # 'free_cells_at_segment': {car_last_indice: intersection.exits[chosen_direction].free_init_cells}},
             # 'direction': "straight" or "turn right" or "turn left" }
             # Otherwise info_can_i_go = 0, so car can't go through the intersection.
-            info_can_i_go = self.next_intersection.can_i_go(self.idx, cars_indices[-1])
+            info_can_i_go = self.next_intersection.can_i_go(self.idx, car_last_indice)
             if info_can_i_go is not None and isinstance(info_can_i_go, dict):
                 if info_can_i_go.get("free_cells_at_intersection") != 0:
                     # extend p vector by free cells of intersection and following segment
-                    self.p = np.append(self.p, np.zeros(info_can_i_go['free_cells_at_segment'][cars_indices[-1]] +
+                    self.p = np.append(self.p, np.zeros(info_can_i_go['free_cells_at_segment'][car_last_indice] +
                                                         info_can_i_go['free_cells_at_intersection']))
 
         # update cellular automata if vector p contains cars
