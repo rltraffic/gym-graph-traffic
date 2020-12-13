@@ -660,6 +660,16 @@ class FourWayTurnsIntersection(Intersection):
             # auxiliary array for removing elements from new_car_at_intersection
             delete_elements = []
 
+            # Checking that there are two cars at the intersection that occupy the second cells (1) at the
+            # intersection and want to turn left - this prevents traffic jams in the sections.
+            there_are_two_cars_want_to_turn_left = None
+            if len(self.new_car_at_intersection) == 2:
+                if self.new_car_at_intersection[0][0] == 1 \
+                        and self.new_car_at_intersection[1][0] == 1\
+                        and self.new_car_at_intersection[0][5] == "turn left" \
+                        and self.new_car_at_intersection[1][5] == "turn left":
+                    there_are_two_cars_want_to_turn_left = True
+
             # Car is an array containing the car's position at the
             # intersection (0 or 1 or 2), the speed of the car, id the previous
             # segment, the side of next segment, id the next segment, direction move.
@@ -788,14 +798,17 @@ class FourWayTurnsIntersection(Intersection):
                 else:
 
                     # If a car is at an intersection and the traffic light (state) has changed
-                    # or the car is just leaving the intersection (car[0] = 2) it has priority
+                    # or the car is just leaving the intersection (car[0] = 2) or at the intersection
+                    # there are two cars that occupy the second cells and want to turn left
+                    # (special condition to limit the formation of traffic jams) it has priority
                     # and can cross the intersection first --> priority = True
                     # If a car is at an intersection and wants to turn left,
                     # and cars are coming in the opposite direction, it must
                     # give way to them. --> priority = False
 
                     priority = None
-                    if car[3] in self.state or car[0] == 2:
+
+                    if car[3] in self.state or car[0] == 2 or there_are_two_cars_want_to_turn_left == True:
                         priority = True
                     else:
                         priority = False
