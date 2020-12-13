@@ -11,18 +11,20 @@ RED_DURATIONS = [0, 20, 40, 60]  # table of all possible red durations (see: REA
 
 # cars' movement
 MAX_SPEED = 5  # in cells per update
-PROB_SLOW_DOWN = 0.1 # parameter from Nagel-Schreckenberg model
+PROB_SLOW_DOWN = 0.1  # parameter from Nagel-Schreckenberg model
 
 # road network
-PRESET = "grid_2x2"  # see PRESETS dictionary below
-SEGMENT_LENGTH = 100  # in cells --> 1 komórka odpowiada 7,5 metra
+PRESET = "grid_3x3"  # see PRESETS dictionary below
+SEGMENT_LENGTH = 100  # in cells --> 1 cell is 7.5 meters
 CAR_DENSITY = 0.125
 
 # rendering
-RENDER = True #show simulation
+RENDER = True  # show simulation
 RENDER_LIGHT_MODE = True
-RENDER_FPS = 3 #30 # Maximum frames per second during render.
+RENDER_FPS = 30  # Maximum frames per second during render.
 
+# select the type of intersection: "FourWayNoTurnsIntersection" or "FourWayTurnsIntersection"
+INTERSECTION_TYPE = "FourWayTurnsIntersection"
 
 PRESETS = {
     "easy": grid.make_line(4, False, 3, segment_len=SEGMENT_LENGTH),
@@ -44,6 +46,7 @@ PARAMETERS = AttrDict({"preset_name": PRESET,
                        "render": RENDER,
                        "render_light_mode": RENDER_LIGHT_MODE,
                        "render_fps": RENDER_FPS,
-                       "intersection_size": INTERSECTION_SIZE})
+                       "intersection_size": INTERSECTION_SIZE,
+                       "intersection_type": INTERSECTION_TYPE})
 
 assert all(0 <= off <= STEP_LENGTH for off in RED_DURATIONS)

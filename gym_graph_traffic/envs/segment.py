@@ -38,6 +38,9 @@ class Segment:
         # initialize cars and free init cells
         self.reset()
 
+        # type of the intersection
+        self.intersection_type = kwargs['intersection_type']
+
     def __str__(self) -> str:
         return str(self.idx)
 
@@ -93,24 +96,29 @@ class Segment:
         First phase of segment update: cellular automata step, and (sometimes) passing car to following segment.
         """
 
-        info_can_i_go = None
-        # check if there is auto (1) in the last 5 cells of the segment
-        if 1 in self.p[-5:]:
-            # get car indice from the last cell contains '1'
-            car_last_indice = self.p.nonzero()[0][-1]
-            # Check if the car can pass the intersection, if so then save all the informations into the dictionary
-            # info_can_i_go =
-            # {'free_cells_at_intersection': 0 or 1 or 2 or 3,
-            # 'chosen_segment':[intersection.exits[chosen_direction].idx),intersection.exits[chosen_direction].to_side],
-            # 'free_cells_at_segment': {car_last_indice: intersection.exits[chosen_direction].free_init_cells}},
-            # 'direction': "straight" or "turn right" or "turn left" }
-            # Otherwise info_can_i_go = 0, so car can't go through the intersection.
-            info_can_i_go = self.next_intersection.can_i_go(self.idx, car_last_indice)
-            if info_can_i_go is not None and isinstance(info_can_i_go, dict):
-                if info_can_i_go.get("free_cells_at_intersection") != 0:
-                    # extend p vector by free cells of intersection and following segment
-                    self.p = np.append(self.p, np.zeros(info_can_i_go['free_cells_at_segment'][car_last_indice] +
-                                                        info_can_i_go['free_cells_at_intersection']))
+        if self.intersection_type == "FourWayNoTurnsIntersection":
+            # extend p vector by free cells of following segment
+            next_segment_free_cells = self.next_intersection.can_i_go(self.idx)
+            if next_segment_free_cells > 0:
+                self.p = np.append(self.p, np.zeros(next_segment_free_cells))
+        elif self.intersection_type == "FourWayTurnsIntersection":
+            # check if there is auto (1) in the last 5 cells of the segment
+            if 1 in self.p[-5:]:
+                # get car index from the last cell contains '1'
+                car_last_index = self.p.nonzero()[0][-1]
+                # Check if the car can pass the intersection, if so then save all the information into the dictionary
+                # info_can_i_go =
+                # {'free_cells_at_intersection': 0 or 1 or 2 or 3,
+                # 'chosen_segment':[intersection.exits[chosen_direction].idx),intersection.exits[chosen_direction].to_side],
+                # 'free_cells_at_segment': {car_last_index: intersection.exits[chosen_direction].free_init_cells}},
+                # 'direction': "straight" or "turn right" or "turn left" }
+                # Otherwise info_can_i_go = 0, so car can't go through the intersection.
+                info_can_i_go = self.next_intersection.can_i_go(self.idx, car_last_index)
+                if isinstance(info_can_i_go, dict):
+                    if info_can_i_go.get("free_cells_at_intersection") != 0:
+                        # extend p vector by free cells of intersection and following segment
+                        self.p = np.append(self.p, np.zeros(info_can_i_go['free_cells_at_segment'][car_last_index] +
+                                                            info_can_i_go['free_cells_at_intersection']))
 
         # update cellular automata if vector p contains cars
         if 1 in self.p:
@@ -122,12 +130,15 @@ class Segment:
         # if some car crossed intersection: pass car to next segment (via the intersection)
         try:
             next_sect_car_pos = next_segment_cells.tolist().index(1)
-            # at any given update, only two cars can cross intersection (by the rules of automata)
+            # at any given update, only one car can cross intersection (by the rules of automata)
             self.v, next_sect_car_vel = np.split(self.v, [-1])
-            self.next_intersection.pass_car(self.idx, next_sect_car_pos, next_sect_car_vel,
-                                            info_can_i_go['chosen_segment'][0], info_can_i_go['chosen_segment'][1],
-                                            info_can_i_go['direction'])
 
+            if self.intersection_type == "FourWayNoTurnsIntersection":
+                self.next_intersection.pass_car(self.idx, next_sect_car_pos, next_sect_car_vel[0])
+            elif self.intersection_type == "FourWayTurnsIntersection":
+                self.next_intersection.pass_car(self.idx, next_sect_car_pos, next_sect_car_vel,
+                                                info_can_i_go['chosen_segment'][0], info_can_i_go['chosen_segment'][1],
+                                                info_can_i_go['direction'])
         except:
             pass
 

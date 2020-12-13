@@ -17,15 +17,6 @@ class Intersection(ABC):
         self.routing = None  # entrance_direction: str -> exit_direction: str
         self.dest_dict = None  # entrance_segment_idx: int -> {entrance_direction: str, exit_segment: Segment}
 
-        # create matrix of cells at the intersection,
-        # each intersection has 2 cells in two directions ( vertical and horizontal)
-        self.cells_at_the_intersection = np.zeros((2, 2), dtype=int)
-
-        # communication with neighbour segments about cars that are on intersection
-        self.new_car_at_intersection = []
-        # velocity vector
-        self.v = np.zeros(0, dtype=np.int8)
-
     def __str__(self) -> str:
         return str(self.idx)
 
@@ -47,10 +38,94 @@ class Intersection(ABC):
     def segment_draw_coords(self, length, to_side):
         raise NotImplementedError
 
-
 class FourWayNoTurnsIntersection(Intersection):
 
-    def __init__(self, idx, red_durations: List[int], x, y, intersection_size, max_v: int, prob_slow_down: float, ):
+    def __init__(self, idx, red_durations: List[int], x, y, intersection_size, max_v: int, prob_slow_down: float):
+        super().__init__(idx)
+
+        self.red_durations = red_durations
+        self.routing = {"u": "d",
+                        "d": "u",
+                        "l": "r",
+                        "r": "l"}
+
+        self.updates_until_state_change = -1
+        self.state = None
+        self.update()
+        self.x = x
+        self.y = y
+        self.intersection_size = intersection_size
+
+    def __str__(self) -> str:
+        return str(self.idx)
+
+    def finalize(self) -> None:
+        self.dest_dict = {}
+
+        for dir_char, segment in self.entrances.items():
+            destination_segment = self.exits[self.routing[dir_char]]
+            self.dest_dict[segment.idx] = (dir_char, destination_segment)
+
+    def set_action(self, action) -> None:
+        self.updates_until_state_change = self.red_durations[action]
+        if self.updates_until_state_change == 0:
+            self.state = "lr"
+        else:
+            self.state = "ud"
+
+    def draw(self, surface, light_mode):
+        red = (253, 65, 30)
+        red_width = 1
+        road_color = (192, 192, 192) if light_mode else (100, 100, 100)
+        pygame.draw.rect(surface, road_color,
+                         pygame.Rect(self.x, self.y, self.intersection_size, self.intersection_size))
+        if self.state is "lr":
+            pygame.draw.rect(surface, red,
+                             pygame.Rect(self.x, self.y, self.intersection_size / 2, red_width))
+            pygame.draw.rect(surface, red,
+                             pygame.Rect(self.x + self.intersection_size / 2 + 1, self.y + self.intersection_size - 1,
+                                         self.intersection_size / 2,
+                                         red_width))
+        else:
+            pygame.draw.rect(surface, red,
+                             pygame.Rect(self.x, self.y + self.intersection_size / 2 + 1, red_width,
+                                         self.intersection_size / 2))
+            pygame.draw.rect(surface, red,
+                             pygame.Rect(self.x + self.intersection_size - 1, self.y, red_width,
+                                         self.intersection_size / 2))
+
+    def segment_draw_coords(self, d, to_side):
+        half_intersection_size = self.intersection_size / 2
+
+        to_direction = {
+            'l': [self.x - d, self.y + half_intersection_size + 1, d, half_intersection_size],
+            'r': [self.x + self.intersection_size, self.y, d, half_intersection_size],
+            'd': [self.x + half_intersection_size + 1, self.y + self.intersection_size, half_intersection_size, d],
+            'u': [self.x, self.y - d, half_intersection_size, d]
+        }
+
+        return to_direction[to_side]
+
+    def update(self) -> None:
+        if self.state is "ud":
+            self.updates_until_state_change -= 1
+            if self.updates_until_state_change == 0:
+                self.state = "lr"
+
+    def can_i_go(self, from_idx) -> int:
+        (source, dest) = self.dest_dict.get(from_idx, (None, None))
+        if source in self.state and dest is not None:
+            return dest.free_init_cells
+        return 0
+
+    def pass_car(self, from_idx, car_position, car_velocity) -> None:
+        (_, dest) = self.dest_dict[from_idx]
+        dest.new_car_at = (car_position, car_velocity)
+
+
+class FourWayTurnsIntersection(Intersection):
+
+    def __init__(self, idx, red_durations: List[int], x, y, intersection_size, max_v: int, prob_slow_down: float):
         super().__init__(idx)
 
         self.red_durations = red_durations
@@ -66,6 +141,15 @@ class FourWayNoTurnsIntersection(Intersection):
         self.x = x
         self.y = y
         self.intersection_size = intersection_size
+
+        # create matrix of cells at the intersection,
+        # each intersection has 2 cells in two directions ( vertical and horizontal)
+        self.cells_at_the_intersection = np.zeros((2, 2), dtype=int)
+
+        # communication with neighbour segments about cars that are on intersection
+        self.new_car_at_intersection = []
+        # velocity vector
+        self.v = np.zeros(0, dtype=np.int8)
 
         # cellular automata parameters
         self.max_v = max_v

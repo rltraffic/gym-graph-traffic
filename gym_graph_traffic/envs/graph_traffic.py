@@ -6,6 +6,7 @@ import pygame
 from attrdict import AttrDict
 
 from gym_graph_traffic.envs.intersection import FourWayNoTurnsIntersection
+from gym_graph_traffic.envs.intersection import FourWayTurnsIntersection
 from gym_graph_traffic.envs.segment import Segment
 
 
@@ -55,8 +56,9 @@ class GraphTrafficEnv(gym.Env):
         self.reward_range = self.reward_observation.reward_range
 
     def _set_up_road_graph(self, params):
-        self.intersections = [FourWayNoTurnsIntersection(i, params.red_durations, x, y,
-                                                         params.intersection_size, params.max_v, params.prob_slow_down) for i, (x, y) in
+        self.intersections = [eval(params.intersection_type)(i, params.red_durations, x, y,
+                                                             params.intersection_size, params.max_v,
+                                                             params.prob_slow_down) for i, (x, y) in
                               enumerate(params.intersections)]
 
         i = 0
@@ -98,8 +100,9 @@ class GraphTrafficEnv(gym.Env):
             # update simulation
             for s in self.segments:
                 s.update_first_phase()
-            for i in self.intersections:
-                i.update_first_phase()
+            if self.params.intersection_type == "FourWayTurnsIntersection":
+                for i in self.intersections:
+                    i.update_first_phase()
             for s in self.segments:
                 s.update_second_phase()
             for i in self.intersections:
