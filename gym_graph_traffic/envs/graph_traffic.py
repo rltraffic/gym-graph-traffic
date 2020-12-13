@@ -21,8 +21,6 @@ class GraphTrafficEnv(gym.Env):
         self.red_durations = params.red_durations
         self.red_durations_raw = params.red_durations_raw
         self.num_red_durations = len(params.red_durations)
-        self.max_v = params.max_v
-        self.prob_slow_down = params.prob_slow_down
 
         # road graph
         self.num_intersections = len(params.intersections)
