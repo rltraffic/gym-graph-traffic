@@ -14,17 +14,18 @@ MAX_SPEED = 5  # in cells per update
 PROB_SLOW_DOWN = 0.1  # parameter from Nagel-Schreckenberg model
 
 # road network
-PRESET = "grid_3x3"  # see PRESETS dictionary below
-SEGMENT_LENGTH = 100  # in cells --> 1 cell is 7.5 meters
+PRESET = "easy"  # see PRESETS dictionary below
+SEGMENT_LENGTH = 100
 CAR_DENSITY = 0.125
 
 # rendering
-RENDER = True  # show simulation
+RENDER = False
 RENDER_LIGHT_MODE = True
-RENDER_FPS = 30  # Maximum frames per second during render.
+RENDER_FPS = 30
 
-# select the type of intersection: "FourWayNoTurnsIntersection" or "FourWayTurnsIntersection"
-INTERSECTION_TYPE = "FourWayTurnsIntersection"
+# If False, cars can only go straight at the intersection,
+# if True, cars can go straight and turn left or right
+TURNS_AT_INTERSECTION = False
 
 PRESETS = {
     "easy": grid.make_line(4, False, 3, segment_len=SEGMENT_LENGTH),
@@ -47,6 +48,6 @@ PARAMETERS = AttrDict({"preset_name": PRESET,
                        "render_light_mode": RENDER_LIGHT_MODE,
                        "render_fps": RENDER_FPS,
                        "intersection_size": INTERSECTION_SIZE,
-                       "intersection_type": INTERSECTION_TYPE})
+                       "turns_at_intersection": TURNS_AT_INTERSECTION})
 
 assert all(0 <= off <= STEP_LENGTH for off in RED_DURATIONS)

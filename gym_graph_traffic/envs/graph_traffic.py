@@ -56,7 +56,9 @@ class GraphTrafficEnv(gym.Env):
         self.reward_range = self.reward_observation.reward_range
 
     def _set_up_road_graph(self, params):
-        self.intersections = [eval(params.intersection_type)(i, params.red_durations, x, y,
+        intersection_class = FourWayTurnsIntersection if self.params.turns_at_intersection else FourWayNoTurnsIntersection
+
+        self.intersections = [intersection_class(i, params.red_durations, x, y,
                                                              params.intersection_size, params.max_v,
                                                              params.prob_slow_down) for i, (x, y) in
                               enumerate(params.intersections)]
@@ -100,7 +102,7 @@ class GraphTrafficEnv(gym.Env):
             # update simulation
             for s in self.segments:
                 s.update_first_phase()
-            if self.params.intersection_type == "FourWayTurnsIntersection":
+            if self.params.turns_at_intersection:
                 for i in self.intersections:
                     i.update_first_phase()
             for s in self.segments:
