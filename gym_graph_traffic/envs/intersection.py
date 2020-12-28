@@ -346,12 +346,12 @@ class FourWayTurnsIntersection(Intersection):
                         info_can_i_go['chosen_segment'].append(self.exits[chosen_direction].idx)
                         info_can_i_go['chosen_segment'].append(self.exits[chosen_direction].to_side)
 
-                    if chosen_direction != 'd':
-                        # check free cells in chosen segment
-                        info_can_i_go['free_cells_at_segment'] = {
-                            cars_indices: self.exits[chosen_direction].free_init_cells}
+                        if chosen_direction != 'd':
+                            # check free cells in chosen segment
+                            info_can_i_go['free_cells_at_segment'] = {
+                                cars_indices: self.exits[chosen_direction].free_init_cells}
 
-                    return info_can_i_go
+                        return info_can_i_go
 
             elif source is "l":
                 # car can go if two cells in its direction is free
@@ -665,7 +665,7 @@ class FourWayTurnsIntersection(Intersection):
             there_are_two_cars_want_to_turn_left = None
             if len(self.new_car_at_intersection) == 2:
                 if self.new_car_at_intersection[0][0] == 1 \
-                        and self.new_car_at_intersection[1][0] == 1\
+                        and self.new_car_at_intersection[1][0] == 1 \
                         and self.new_car_at_intersection[0][5] == "turn left" \
                         and self.new_car_at_intersection[1][5] == "turn left":
                     there_are_two_cars_want_to_turn_left = True
