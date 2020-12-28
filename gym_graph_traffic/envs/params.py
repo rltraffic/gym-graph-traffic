@@ -24,8 +24,14 @@ RENDER_LIGHT_MODE = True
 RENDER_FPS = 30
 
 # If False, cars can only go straight at the intersection,
-# if True, cars can go straight and turn left or right
+# if True, cars can go straight and turn left or right -
+# it IS NOT allowed for "easy" and "two_roads" road network
 TURNS_AT_INTERSECTION = False
+
+# save data in file - this is only allowed for the grid_AxB road network
+SAVE_COUNT_OF_CARS = False
+# set the file type - json or yaml
+COUNT_OF_CARS_FILE_TYPE = "yaml"
 
 PRESETS = {
     "easy": grid.make_line(4, False, 3, segment_len=SEGMENT_LENGTH),
@@ -48,6 +54,8 @@ PARAMETERS = AttrDict({"preset_name": PRESET,
                        "render_light_mode": RENDER_LIGHT_MODE,
                        "render_fps": RENDER_FPS,
                        "intersection_size": INTERSECTION_SIZE,
-                       "turns_at_intersection": TURNS_AT_INTERSECTION})
+                       "turns_at_intersection": TURNS_AT_INTERSECTION,
+                       "save_count_of_cars": SAVE_COUNT_OF_CARS,
+                       "count_of_cars_file_type": COUNT_OF_CARS_FILE_TYPE})
 
 assert all(0 <= off <= STEP_LENGTH for off in RED_DURATIONS)

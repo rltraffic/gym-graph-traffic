@@ -5,7 +5,6 @@ import random
 
 import pygame
 
-
 class Intersection(ABC):
 
     def __init__(self, idx):
@@ -16,6 +15,10 @@ class Intersection(ABC):
 
         self.routing = None  # entrance_direction: str -> exit_direction: str
         self.dest_dict = None  # entrance_segment_idx: int -> {entrance_direction: str, exit_segment: Segment}
+
+        # a dictionary storing information about the number of cars on each
+        # of the entry and exit segments from the intersection in each step
+        self.count_of_cars_in_segments_dict = {}
 
     def __str__(self) -> str:
         return str(self.idx)
@@ -37,6 +40,7 @@ class Intersection(ABC):
 
     def segment_draw_coords(self, length, to_side):
         raise NotImplementedError
+
 
 class FourWayNoTurnsIntersection(Intersection):
 
@@ -65,6 +69,70 @@ class FourWayNoTurnsIntersection(Intersection):
         for dir_char, segment in self.entrances.items():
             destination_segment = self.exits[self.routing[dir_char]]
             self.dest_dict[segment.idx] = (dir_char, destination_segment)
+
+    def create_count_of_cars_in_segments_dict(self):
+        self.count_of_cars_in_segments_dict = {
+            "entrances": {
+                "l": {
+                    "segment": {
+                        self.entrances['l'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.entrances['l'].p)]
+                        }
+                    }
+                },
+                "r": {
+                    "segment": {
+                        self.entrances['r'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.entrances['r'].p)]
+                        }
+                    }
+                },
+                "d": {
+                    "segment": {
+                        self.entrances['d'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.entrances['d'].p)]
+                        }
+                    }
+                },
+                "u": {
+                    "segment": {
+                        self.entrances['u'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.entrances['u'].p)]
+                        }
+                    }
+                }
+            },
+            "exits": {
+                "l": {
+                    "segment": {
+                        self.exits['l'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.exits['l'].p)]
+                        }
+                    }
+                },
+                "r": {
+                    "segment": {
+                        self.exits['r'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.exits['r'].p)]
+                        }
+                    }
+                },
+                "d": {
+                    "segment": {
+                        self.exits['d'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.exits['d'].p)]
+                        }
+                    }
+                },
+                "u": {
+                    "segment": {
+                        self.exits['u'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.exits['u'].p)]
+                        }
+                    }
+                }
+            }
+        }
 
     def set_action(self, action) -> None:
         self.updates_until_state_change = self.red_durations[action]
@@ -122,6 +190,16 @@ class FourWayNoTurnsIntersection(Intersection):
         (_, dest) = self.dest_dict[from_idx]
         dest.new_car_at = (car_position, car_velocity)
 
+    def add_count_of_cars_in_segments(self):
+        for direction in self.count_of_cars_in_segments_dict['entrances']:
+            for idx in self.count_of_cars_in_segments_dict['entrances'][direction]['segment']:
+                self.count_of_cars_in_segments_dict['entrances'][direction]['segment'][idx]['count_of_cars']. \
+                    append(np.count_nonzero(self.entrances[direction].p))
+        for direction in self.count_of_cars_in_segments_dict['exits']:
+            for idx in self.count_of_cars_in_segments_dict['exits'][direction]['segment']:
+                self.count_of_cars_in_segments_dict['exits'][direction]['segment'][idx]['count_of_cars']. \
+                    append(np.count_nonzero(self.exits[direction].p))
+
 
 class FourWayTurnsIntersection(Intersection):
 
@@ -165,6 +243,70 @@ class FourWayTurnsIntersection(Intersection):
             for routing_exit_char in self.routing[dir_char]:
                 destination_segment.append(self.exits[routing_exit_char])
             self.dest_dict[segment.idx] = (dir_char, destination_segment)
+
+    def create_count_of_cars_in_segments_dict(self):
+        self.count_of_cars_in_segments_dict = {
+            "entrances": {
+                "l": {
+                    "segment": {
+                        self.entrances['l'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.entrances['l'].p)]
+                        }
+                    }
+                },
+                "r": {
+                    "segment": {
+                        self.entrances['r'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.entrances['r'].p)]
+                        }
+                    }
+                },
+                "d": {
+                    "segment": {
+                        self.entrances['d'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.entrances['d'].p)]
+                        }
+                    }
+                },
+                "u": {
+                    "segment": {
+                        self.entrances['u'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.entrances['u'].p)]
+                        }
+                    }
+                }
+            },
+            "exits": {
+                "l": {
+                    "segment": {
+                        self.exits['l'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.exits['l'].p)]
+                        }
+                    }
+                },
+                "r": {
+                    "segment": {
+                        self.exits['r'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.exits['r'].p)]
+                        }
+                    }
+                },
+                "d": {
+                    "segment": {
+                        self.exits['d'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.exits['d'].p)]
+                        }
+                    }
+                },
+                "u": {
+                    "segment": {
+                        self.exits['u'].idx: {
+                            "count_of_cars": [np.count_nonzero(self.exits['u'].p)]
+                        }
+                    }
+                }
+            }
+        }
 
     def set_action(self, action) -> None:
         self.updates_until_state_change = self.red_durations[action]
@@ -1121,3 +1263,13 @@ class FourWayTurnsIntersection(Intersection):
                     # there is a car on the left-turn trajectory, so this is equal to zero
                     free_cells_at_next_segment = 0
         return (free_cells_at_intersection, free_cells_at_next_segment)
+
+    def add_count_of_cars_in_segments(self):
+        for direction in self.count_of_cars_in_segments_dict['entrances']:
+            for idx in self.count_of_cars_in_segments_dict['entrances'][direction]['segment']:
+                self.count_of_cars_in_segments_dict['entrances'][direction]['segment'][idx]['count_of_cars']. \
+                    append(np.count_nonzero(self.entrances[direction].p))
+        for direction in self.count_of_cars_in_segments_dict['exits']:
+            for idx in self.count_of_cars_in_segments_dict['exits'][direction]['segment']:
+                self.count_of_cars_in_segments_dict['exits'][direction]['segment'][idx]['count_of_cars']. \
+                    append(np.count_nonzero(self.exits[direction].p))

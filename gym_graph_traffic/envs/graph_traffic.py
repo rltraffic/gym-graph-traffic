@@ -3,6 +3,9 @@ from typing import List
 import gym
 import numpy as np
 import pygame
+import yaml
+import datetime
+import json
 from attrdict import AttrDict
 
 from gym_graph_traffic.envs.intersection import FourWayNoTurnsIntersection
@@ -59,8 +62,8 @@ class GraphTrafficEnv(gym.Env):
         intersection_class = FourWayTurnsIntersection if self.params.turns_at_intersection else FourWayNoTurnsIntersection
 
         self.intersections = [intersection_class(i, params.red_durations, x, y,
-                                                             params.intersection_size, params.max_v,
-                                                             params.prob_slow_down) for i, (x, y) in
+                                                 params.intersection_size, params.max_v,
+                                                 params.prob_slow_down) for i, (x, y) in
                               enumerate(params.intersections)]
 
         i = 0
@@ -76,6 +79,8 @@ class GraphTrafficEnv(gym.Env):
 
         for intersection in self.intersections:
             intersection.finalize()
+            if "grid" in self.params.preset_name:
+                intersection.create_count_of_cars_in_segments_dict()
 
     def _action_int_to_action_array(self, action_int):
         """Gets a string representation of the action_int in the base = number of red_durations.
@@ -85,7 +90,7 @@ class GraphTrafficEnv(gym.Env):
         """Returns array of ints from action_str list of strings"""
         return np.array(list(int(s) for s in list(action_str)))
 
-    def step(self, action_int):
+    def step(self, action_int, count_of_steps):
 
         # apply action into intersection(s)
         action_array = self._action_int_to_action_array(action_int)
@@ -109,11 +114,37 @@ class GraphTrafficEnv(gym.Env):
                 s.update_second_phase()
             for i in self.intersections:
                 i.update()
+                if "grid" in self.params.preset_name:
+                    i.add_count_of_cars_in_segments()
 
             self.reward_observation.update()
 
         self.current_step += 1
         done = self.current_step >= self.steps_per_episode
+        if self.params.save_count_of_cars and "grid" in self.params.preset_name and self.current_step == count_of_steps:
+
+            if self.params.count_of_cars_file_type == "yaml":
+                file_name = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + "_count_of_cars.yaml"
+                file = open("files_count_of_cars/" + file_name, "w+")
+                info_dict = {"intersection": {}, "params": {}}
+                for p in self.params:
+                    info_dict['params'][p] = self.params[p]
+                for i in self.intersections:
+                    info_dict['intersection'][i.idx] = i.count_of_cars_in_segments_dict
+                file.seek(0)
+                yaml.dump(info_dict, file)
+                file.close()
+            elif self.params.count_of_cars_file_type == "json":
+                file_name = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + "_count_of_cars.json"
+                file = open("files_count_of_cars/" + file_name, "w+")
+                info_dict = {"intersection": {}, "params": {}}
+                for p in self.params:
+                    info_dict['params'][p] = self.params[p]
+                for i in self.intersections:
+                    info_dict['intersection'][i.idx] = i.count_of_cars_in_segments_dict
+                file.seek(0)
+                json.dump(info_dict, file)
+                file.close()
 
         reward, observation = self.reward_observation.values()
 
