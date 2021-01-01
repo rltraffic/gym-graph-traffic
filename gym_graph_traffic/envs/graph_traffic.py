@@ -3,10 +3,10 @@ from typing import List
 import gym
 import numpy as np
 import pygame
+from attrdict import AttrDict
 import yaml
 import datetime
 import json
-from attrdict import AttrDict
 
 from gym_graph_traffic.envs.intersection import FourWayNoTurnsIntersection
 from gym_graph_traffic.envs.intersection import FourWayTurnsIntersection
@@ -90,7 +90,7 @@ class GraphTrafficEnv(gym.Env):
         """Returns array of ints from action_str list of strings"""
         return np.array(list(int(s) for s in list(action_str)))
 
-    def step(self, action_int, count_of_steps):
+    def step(self, action_int):
 
         # apply action into intersection(s)
         action_array = self._action_int_to_action_array(action_int)
@@ -121,30 +121,6 @@ class GraphTrafficEnv(gym.Env):
 
         self.current_step += 1
         done = self.current_step >= self.steps_per_episode
-        if self.params.save_count_of_cars and "grid" in self.params.preset_name and self.current_step == count_of_steps:
-
-            if self.params.count_of_cars_file_type == "yaml":
-                file_name = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + "_count_of_cars.yaml"
-                file = open("files_count_of_cars/" + file_name, "w+")
-                info_dict = {"intersection": {}, "params": {}}
-                for p in self.params:
-                    info_dict['params'][p] = self.params[p]
-                for i in self.intersections:
-                    info_dict['intersection'][i.idx] = i.count_of_cars_in_segments_dict
-                file.seek(0)
-                yaml.dump(info_dict, file)
-                file.close()
-            elif self.params.count_of_cars_file_type == "json":
-                file_name = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + "_count_of_cars.json"
-                file = open("files_count_of_cars/" + file_name, "w+")
-                info_dict = {"intersection": {}, "params": {}}
-                for p in self.params:
-                    info_dict['params'][p] = self.params[p]
-                for i in self.intersections:
-                    info_dict['intersection'][i.idx] = i.count_of_cars_in_segments_dict
-                file.seek(0)
-                json.dump(info_dict, file)
-                file.close()
 
         reward, observation = self.reward_observation.values()
 
@@ -173,6 +149,30 @@ class GraphTrafficEnv(gym.Env):
 
         pygame.transform.scale(self.render_surface, self.render_screen_size_scaled, self.render_screen)
         pygame.display.flip()
+
+    def _save_data(parameters, intersections):
+        if parameters.count_of_cars_file_type == "yaml":
+            file_name = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + "_count_of_cars.yaml"
+            file = open("files_count_of_cars/" + file_name, "w+")
+            info_dict = {"intersection": {}, "parameters": {}}
+            for p in parameters:
+                info_dict['parameters'][p] = parameters[p]
+            for i in intersections:
+                info_dict['intersection'][i.idx] = i.count_of_cars_in_segments_dict
+            file.seek(0)
+            yaml.dump(info_dict, file)
+            file.close()
+        elif parameters.count_of_cars_file_type == "json":
+            file_name = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + "_count_of_cars.json"
+            file = open("files_count_of_cars/" + file_name, "w+")
+            info_dict = {"intersection": {}, "parameters": {}}
+            for p in parameters:
+                info_dict['parameters'][p] = parameters[p]
+            for i in intersections:
+                info_dict['intersection'][i.idx] = i.count_of_cars_in_segments_dict
+            file.seek(0)
+            json.dump(info_dict, file)
+            file.close()
 
 
 class RewardObservationWrapper:
