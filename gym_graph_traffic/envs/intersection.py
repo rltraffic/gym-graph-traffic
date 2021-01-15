@@ -2,8 +2,8 @@ from abc import ABC
 from typing import List
 import numpy as np
 import random
-
 import pygame
+
 
 class Intersection(ABC):
 

@@ -20,6 +20,7 @@ for episode in range(1):  # 20
 
     env.close()
 
+
 # save data in file
 if PARAMETERS.save_count_of_cars and "grid" in PARAMETERS.preset_name:
     GraphTrafficEnv._save_data(PARAMETERS, env.intersections)

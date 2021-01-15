@@ -110,6 +110,7 @@ class GraphTrafficEnv(gym.Env):
             if self.params.turns_at_intersection:
                 for i in self.intersections:
                     i.update_first_phase()
+
             for s in self.segments:
                 s.update_second_phase()
             for i in self.intersections:

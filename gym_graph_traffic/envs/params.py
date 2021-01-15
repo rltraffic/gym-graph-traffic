@@ -14,19 +14,19 @@ MAX_SPEED = 5  # in cells per update
 PROB_SLOW_DOWN = 0.1  # parameter from Nagel-Schreckenberg model
 
 # road network
-PRESET = "easy"  # see PRESETS dictionary below
+PRESET = "grid_3x3"  # see PRESETS dictionary below
 SEGMENT_LENGTH = 100
 CAR_DENSITY = 0.125
 
 # rendering
-RENDER = False
+RENDER = True
 RENDER_LIGHT_MODE = True
 RENDER_FPS = 30
 
 # If False, cars can only go straight at the intersection,
 # if True, cars can go straight and turn left or right -
 # it IS NOT allowed for "easy" and "two_roads" road network
-TURNS_AT_INTERSECTION = False
+TURNS_AT_INTERSECTION = True
 
 # save data in file - this is only allowed for the grid_AxB road network
 SAVE_COUNT_OF_CARS = False
